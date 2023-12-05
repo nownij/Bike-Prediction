@@ -3,6 +3,7 @@ import parameters as pr
 
 if __name__ == "__main__":
     data = Rd.showCSV(pr.file_path)
-    op = Rd.dataOptimization(data)
+    data_op = Rd.dataOptimization(data)
 
-    Rd.showGraph(op)
+    # interval = int(input("Input Interval : "))
+    result = Rd.usageOverTime(data_op, 10)

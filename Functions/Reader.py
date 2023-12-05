@@ -55,38 +55,49 @@ def brokenBike(DataFrame):
 
     # Apply conditions and return the modified DataFrame
     return DataFrame[~drops]
+
+
 # ======================================================================== #
 
 
-def showGraph(DataFrame):
-    interval = int(input("Input Interval : "))
-    usageOverTime(DataFrame, interval)
 def usageOverTime(DataFrame, interval):
-    DataFrame = DataFrame.drop(['ST-start', 'ST-end', 'Minute[min]', 'Distance[m]'], axis=1)
-    resultDF = DataFrame.groupby(['Date', 'HHMM'], as_index=False)['Use'].sum()
+    # Drop unnecessary columns
+    DataFrame = DataFrame.drop(['Date', 'ST-start', 'ST-end', 'Minute[min]', 'Distance[m]'], axis=1)
 
-    # 'HHMM' changes to str
+    # Group by 'HHMM' and sum the 'Use' values
+    resultDF = DataFrame.groupby(['HHMM'], as_index=False)['Use'].sum()
+
+    # Convert 'HHMM' to str and format it as 'YYYYMMDDHHMM'
     resultDF['HHMM'] = resultDF['HHMM'].astype(str).str.zfill(4)
-    resultDF['Datetime'] = pd.to_datetime(resultDF['Date'].astype(str) + resultDF['HHMM'], format='%Y%m%d%H%M')
+    resultDF['Datetime'] = pd.to_datetime(resultDF['HHMM'], format='%H%M')
 
-    # set index to 'Datetime'
+    # Set 'Datetime' as the index
     resultDF.set_index('Datetime', inplace=True)
 
-    # set interval
+    # Set the resampling interval
     itVL = str(interval) + 'T'
+
+    # Resample the DataFrame and sum the values within each interval
     resampledDF = resultDF.resample(itVL).sum()
 
-    # reset index
+    # Reset the index and convert 'Datetime' back to 'HHMM' format
     resampledDF.reset_index(inplace=True)
     resampledDF['HHMM'] = resampledDF['Datetime'].dt.strftime('%H%M').astype(int)
 
-    resampledDF = resampledDF[['Date', 'HHMM', 'Use']]
+    # Reorder columns
+    resampledDF = resampledDF[['HHMM', 'Use']]
 
+    # Display the resampled DataFrame
     print(resampledDF)
 
+    # Show the graph and optionally save it
+    showGraph(resampledDF) # , save_path='path/to/save/figure.png'
+
+    return resampledDF
+def showGraph(DataFrame):
     # graph Settings
     plt.figure(figsize=(12, 6))
-    plt.plot(resampledDF['HHMM'], resampledDF['Use'], linestyle='solid')
+    plt.plot(DataFrame['HHMM'], DataFrame['Use'], linestyle='solid')
 
     # graph title, label
     plt.title('Hourly Use Over Time', fontsize=16)
@@ -96,6 +107,7 @@ def usageOverTime(DataFrame, interval):
     # show Graph
     plt.grid(True)
     plt.show()
-
+def saveFile(DataFrame):
+    pass
 
 # ======================================================================== #
