@@ -79,7 +79,7 @@ def convert_to_filename_format(date_range):
         # Extract month from the date
         month = date[:2]
 
-        # Convert date format from MMDD to YYYYMMDD (using the fixed year)
+        # Convert date format to file format
         filename_format = f"tpss_bcycl_od_statnhm_2022/tpss_bcycl_od_statnhm_2022{month}/tpss_bcycl_od_statnhm_2022{date}.csv"
 
         filename_list.append(filename_format)
