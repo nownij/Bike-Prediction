@@ -1,4 +1,6 @@
-def date_Range_Settings():
+import os
+
+def DateRangeSettings():
     # List to store the generated date range
     date_range = []
 
@@ -10,10 +12,9 @@ def date_Range_Settings():
             # Generate the date range
             date_range = generate_range(start_date, end_date)
             filename_list = convert_to_filename_format(date_range)
-            print(filename_list)
-            print(len(filename_list))
+            # print(filename_list, len(filename_list))
 
-            return filename_list
+            return start_date, end_date, filename_list
         else:
             print("Invalid Date Format or Start date is not before End date. Please try again.\n")
             continue  # Go back to the beginning of the loop
@@ -72,6 +73,9 @@ def increment_date(date):
     # Convert the date to a string and return
     return f"{month:02d}{day:02d}"
 def convert_to_filename_format(date_range):
+    base_name = "tpss_bcycl_od_statnhm_2022"
+    base_route = "C:/Users/myjam/Desktop"
+
     # List to store the converted date format
     filename_list = []
 
@@ -80,10 +84,10 @@ def convert_to_filename_format(date_range):
         month = date[:2]
 
         # Convert date format to file format
-        filename_format = f"tpss_bcycl_od_statnhm_2022/tpss_bcycl_od_statnhm_2022{month}/tpss_bcycl_od_statnhm_2022{date}.csv"
-
-        filename_list.append(filename_format)
+        filename_format = f"{base_route}/{base_name}/{base_name}{month}/{base_name}{date}.csv"
+        if os.path.isfile(filename_format):
+            filename_list.append(filename_format)
+        else:
+            continue
 
     return filename_list
-
-

@@ -1,12 +1,14 @@
-from Functions import Reader as Rd
-import parameters as pr
-import test
-'''
-data = Rd.showCSV(pr.file_path)
-    data_op = Rd.dataOptimization(data)
+from Functions import DateUtils as DU
+from Functions import DateMerger as DM
+from Functions import GraphPlotter as GP
 
-    # interval = int(input("Input Interval : "))
-    result = Rd.usageOverTime(data_op, 10)
-'''
+import pandas as pd
+
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
+
 if __name__ == "__main__":
-    filename_result = test.date_Range_Settings()
+    start_date, end_date, filename_result = DU.DateRangeSettings()
+    merged_df = DM.MergeDataframes(filename_result)
+    GP.ShowGraph(start_date, end_date, merged_df)
+    print(merged_df)
