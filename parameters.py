@@ -1,2 +1,5 @@
-file_path = r"C:\Users\myjam\Desktop\tpss_bcycl_od_statnhm_2022\tpss_bcycl_od_statnhm_202204\tpss_bcycl_od_statnhm_20220405.csv"
+basic = "tpss_bcycl_od_statnhm_2022"
+month = 3
+day = 8
 
+file_path = fr"C:\Users\myjam\Desktop\{basic}\{basic}{month}\{basic}{month}{day}.csv"
