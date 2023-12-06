@@ -11,4 +11,4 @@ if __name__ == "__main__":
     start_date, end_date, filename_result = DU.DateRangeSettings()
     merged_df = DM.MergeDataframes(filename_result)
     GP.ShowGraph(start_date, end_date, merged_df)
-    print(merged_df)
+    print(merged_df) # 2월 데이터도 이상해요
