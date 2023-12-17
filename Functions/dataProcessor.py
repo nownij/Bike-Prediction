@@ -4,8 +4,8 @@ import os
 import pandas as pd
 
 # Set display options to show all rows and columns in DataFrames
-pd.set_option('display.max_rows', None)
-pd.set_option('display.max_columns', None)
+#pd.set_option('display.max_rows', None)
+#pd.set_option('display.max_columns', None)
 
 def is_valid_date(date_str):
     # Check if the input string is a valid date formatted as '%Y%m%d'
@@ -14,7 +14,6 @@ def is_valid_date(date_str):
         return True
     except ValueError:
         return False
-
 def select_date():
     while True:
         start_date = input("Start date (YYYYMMDD): ")
@@ -41,7 +40,6 @@ def select_date():
             current_date += timedelta(days=1)
 
         return date_range
-
 def read_csv_files_in_date_range(date_range):
     original_data = []
 
@@ -63,7 +61,6 @@ def read_csv_files_in_date_range(date_range):
             print('There is no file name of : ', csv_file_path)
 
     return original_data
-
 def set_columns(data):
     selected_columns = ['기준_날짜', '기준_시간대', '시작_대여소_ID', '종료_대여소_ID', '전체_건수', '전체_이용_분', '전체_이용_거리']
     new_column_names = ['Date', 'HHMM', 'ST-start', 'ST-end', 'Use', 'Minute[min]', 'Distance[m]']
@@ -76,7 +73,6 @@ def set_columns(data):
         result_data.append(df)
 
     return result_data
-
 def remove_useless_data(data):
     result_data = []
     for df in data:
@@ -90,7 +86,6 @@ def remove_useless_data(data):
         result_data.append(df)
 
     return result_data
-
 def set_target_location(data):
     target_info_file_path = "Data/bikeStationInfo(23.06).csv"
 
@@ -107,7 +102,10 @@ def set_target_location(data):
 
     return result_data
 
-def merge_dataFrames(data):
+
+
+
+def merge_dataframes(data):
     # Initialize the DataFrame to store the final result
     final_result = pd.DataFrame(columns=['HHMM', 'Use', 'Minute[min]', 'Distance[m]'])
 
@@ -121,6 +119,7 @@ def merge_dataFrames(data):
 
         # Add the result to the final result
         final_result = pd.concat([final_result, grouped])
+
 
     # Sum the values where 'HHMM' is the same in the final result
     final_result = final_result.groupby('HHMM').sum().reset_index()
