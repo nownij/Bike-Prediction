@@ -1,45 +1,20 @@
-# DataProcessor.py
+# dataProcessor.py
 from datetime import datetime, timedelta
 import os
 import pandas as pd
 
-def set_display_option():
+def setOptions():
     # Set display options to show all rows and columns in DataFrames
-    command = input("Show all Rows, Columns in DataFrames? [y] >> ")
+    pd.reset_option('display.max_rows', None)
+    pd.reset_option('display.max_columns', None)
     # Disable the Warning(Not Recommended)
     pd.set_option('mode.chained_assignment', None)
-
-    if command == 'y':
-        pd.set_option('display.max_rows', None)
-        pd.set_option('display.max_columns', None)
-    else:
-        pd.reset_option('display.max_rows')
-        pd.reset_option('display.max_columns')
 def is_valid_date(date_str):
     try:
         datetime.strptime(date_str, '%Y%m%d')
         return True
     except ValueError:
         return False
-def chooseDate():
-    while True:
-        start_date_str = input("Start date (YYYYMMDD): ")
-        end_date_str = input("End date   (YYYYMMDD): ")
-
-        try:
-            start_date = datetime.strptime(start_date_str, '%Y%m%d')
-            end_date = datetime.strptime(end_date_str, '%Y%m%d')
-
-            if start_date > end_date:
-                raise ValueError("End date should be equal to or after the start date.")
-
-            dateRange = [(current_date.strftime('%Y%m%d'), current_date.strftime('%a')) for current_date in
-                         (start_date + timedelta(days=n) for n in range((end_date - start_date).days + 1))]
-
-            return dateRange
-
-        except ValueError as e:
-            print(f"Invalid input: {e}. Please enter valid dates.")
 def weekdays_weekends(dateRange):
     weekdays = [date for date, day in dateRange if day not in ['Sat', 'Sun']]
     weekends = [date for date, day in dateRange if day in ['Sat', 'Sun']]
@@ -62,12 +37,44 @@ def weekdays_weekends(dateRange):
     wkendList = [date_info for date_info in dateRange if date_info[0] in (weekends + holiday_dates)]
 
     return wkdayList, wkendList
-def readCSV(period):
+def chooseDate():
+    while True:
+        start_date_str = input("Start date (YYYYMMDD) >> ")
+        end_date_str   = input("End date   (YYYYMMDD) >> ")
+
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y%m%d')
+            end_date = datetime.strptime(end_date_str, '%Y%m%d')
+
+            if start_date > end_date:
+                raise ValueError("End date should be equal to or after the start date.")
+
+            dateRange = [(current_date.strftime('%Y%m%d'), current_date.strftime('%a')) for current_date in
+                         (start_date + timedelta(days=n) for n in range((end_date - start_date).days + 1))]
+
+            wkdayList, wkendList = weekdays_weekends(dateRange)
+
+            while True:
+                holiday_var = input("Filter : ALL [0] / Weekdays [1] / Holidays [2] >> ")
+                if holiday_var == '0':
+                    return dateRange
+                elif holiday_var == '1':
+                    return wkdayList
+                elif holiday_var == '2':
+                    return wkendList
+                else:
+                    print("Select again.")
+
+        except ValueError as e:
+            print(f"Invalid Input : {e}. Please Enter Valid Dates.")
+def read_csv(period):
+    dateList, dayList = zip(*period)
+
     original_df_list = []
 
-    for date_str in period:
+    for date_str in dateList:
         year_month_str = date_str[:6]
-        csv_file_path = f"Data/tpss_bcycl_od_statnhm_{year_month_str}/tpss_bcycl_od_statnhm_{date_str}.csv"
+        csv_file_path = f"./Data/tpss_bcycl_od_statnhm_{year_month_str}/tpss_bcycl_od_statnhm_{date_str}.csv"
 
         if os.path.exists(csv_file_path):
             try:
@@ -76,7 +83,6 @@ def readCSV(period):
             except UnicodeDecodeError:
                 # reading with cp949 encoding
                 original_df_list.append(pd.read_csv(csv_file_path, encoding='cp949'))
-
         else:
             print("There is no file name of : ", csv_file_path)
 
@@ -84,7 +90,7 @@ def readCSV(period):
 def filtering(df_list):
     selected_columns = ['기준_날짜', '기준_시간대', '시작_대여소_ID', '종료_대여소_ID', '전체_건수', '전체_이용_분', '전체_이용_거리']
     new_column_names = ['Date', 'HHMM', 'ST-start', 'ST-end', 'Use', 'Minute[min]', 'Distance[m]']
-    target_info_file_path = "Data/bikeStationInfo(23.06).csv"
+    target_info_file_path = "./Data/bikeStationInfo(23.06).csv"
 
     target_info = pd.read_csv(target_info_file_path)
 
@@ -118,21 +124,3 @@ def sumByUse(df_list):
         sumByuse_df_list.append(df)
 
     return sumByuse_df_list
-
-"""
-# main.py
-    # tot_usage_df = DtPR.sumByUse_all(filtered_df_list)
-    # visualizer.show_dataframe(date_range, final)
-
-def sumByUse_all(df_list):
-    tot_usage_df = pd.DataFrame(columns=['HHMM', 'Use', 'Minute[min]', 'Distance[m]'])
-
-    for df in df_list:
-        df = df.drop(['Date', 'ST-start', 'ST-end'], axis=1, errors='ignore')
-        grouped = df.groupby('HHMM').sum().reset_index()
-        tot_usage_df = pd.concat([tot_usage_df, grouped])
-
-    tot_usage_df = tot_usage_df.groupby('HHMM').sum().reset_index()
-
-    return tot_usage_df
-"""
