@@ -1,79 +1,57 @@
-import requests
-import json
 import pandas as pd
-import schedule
-import time
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+import matplotlib.pyplot as plt
+from Functions import dataProcessor as DtPR
 
-authKey = '53644e646777696338335a62654768'
+def train_multiple_dfs(df_list):
+    trained_models = []
 
-# Real-Time Data
-def getStationInfo(authKey):
-    info = []
+    for i, df in enumerate(df_list):
+        # Assuming your DataFrame has columns 'HHMM' and 'Use'
+        X = df[['HHMM']]  # Features
+        y = df['Use']      # Target variable
 
-    for i in range(3):
-        gen_req_url = 'http://openapi.seoul.go.kr:8088/' + authKey + '/json/bikeList/' + str(i * 1000 + 1) + '/' + str((i + 1) * 1000) + '/'
-        print(gen_req_url)
-        original_data = requests.get(gen_req_url)
-        processed_data = json.loads(original_data.text)
-        info = info + processed_data['rentBikeStatus']['row']
+        # Split the data into training and testing sets
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # print(f'Show Original Data : {info}')
+        # Create a linear regression model
+        model = LinearRegression()
 
-    return info
-# Removing Unessential Component
-def removeComponent(info):
-    for item in info:
-        del item['shared']
-        del item['stationLatitude']
-        del item['stationLongitude']
-        del item['stationId']
-def locationFilter(info):
-    data = pd.read_csv("Data/bikeStationInfo(23.06).csv")
-    df = pd.DataFrame(data)
-    code_list = [code.replace('ST-', '') for code in df['Code']] # 광진구 코드
+        # Train the model
+        model.fit(X_train, y_train)
 
-    # 'stationName'에서 숫자 추출하여 code_list에 있는 숫자들과 교집합 구하기
-    numbers_in_station_name = [int(station['stationName'].split('.')[0]) for station in info]
-    intersection_set = set(map(str, numbers_in_station_name)) & set(code_list)
+        # Make predictions on the test set
+        y_pred = model.predict(X_test)
 
-    # 교집합에 해당하는 딕셔너리만 남기기
-    new_info = [station for station in info if station['stationName'].split('.')[0] in intersection_set]
-    new_info_df = pd.DataFrame(new_info)
+        # Evaluate the model
+        mse = mean_squared_error(y_test, y_pred)
+        print(f'Mean Squared Error for DataFrame {i}: {mse}')
 
-    # 컬럼명 변경
-    new_info_df = new_info_df.rename(
-        columns={'rackTotCnt': 'rackCnt', 'stationName': 'ST_Code', 'parkingBikeTotCnt': 'parkCnt'})
-    # col 위치 변경
-    new_info_df = new_info_df[['ST_Code', 'parkCnt', 'rackCnt']] # parkCnt : 현재 주차된 자전거 개수, rackCnt : 전체 거치대 개수
+        # Plot the actual vs predicted values
+        plt.scatter(X_test, y_test, color='black', label='Actual')
+        plt.plot(X_test, y_pred, color='blue', linewidth=3, label='Predicted')
+        plt.xlabel('HHMM')
+        plt.ylabel('Use')
+        plt.title(f'Actual vs Predicted Bicycle Usage - DataFrame {i}')
+        plt.legend()
+        plt.show()
 
-    # ST_Code 내의 정보에서 . (온점) 앞 숫자만 남기기
-    new_info_df['ST_Code'] = 'ST-' + new_info_df['ST_Code'].str.extract(r'(\d+)')
+        trained_models.append(model)
 
-    return new_info_df
-def crawl_and_save():
-    global execution_count
-    execution_count += 1
+    return trained_models
+dateRange = DtPR.chooseDate()
+wkdayList, wkendList = DtPR.weekdays_weekends(dateRange)
+dateList, dayList = zip(*wkdayList)
+original_df_list = DtPR.readCSV(dateList)
+filtered_df_list = DtPR.filtering(original_df_list)
+df_list = DtPR.sumByUse(filtered_df_list)
 
-    try:
-        info = getStationInfo(authKey)
-        removeComponent(info)
-        new_info_df = locationFilter(info)
+trained_models = train_multiple_dfs(df_list)
 
-        # 10분 간격으로 데이터를 저장 (CSV 형식)
-        timestamp_str = pd.Timestamp.now().strftime('%Y%m%d%H%M')
-        new_info_df.to_csv('./Data/test/data_{}'.format(timestamp_str), index=False)
-
-        print(f'Successfully executed {execution_count} times at {pd.Timestamp.now()}')
-    except Exception as e:
-        print(f'Error during execution {execution_count}: {e}')
-
-if __name__ == "__main__":
-    # Initialize execution_count
-    execution_count = 0
-
-    # 10분 간격으로 크롤링 작업을 스케줄
-    schedule.every(10).minutes.do(crawl_and_save)
-
-    while execution_count < 5:
-        schedule.run_pending()
-        time.sleep(1)
+# Example: Make predictions using the first trained model
+first_model = trained_models[0]
+new_data = pd.DataFrame({'HHMM': [5, 10, 15, 20]})
+predictions = first_model.predict(new_data[['HHMM']])
+print("Predictions:", predictions)

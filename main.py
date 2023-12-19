@@ -1,33 +1,26 @@
 import time
-from Functions import dataProcessor, visualizer
+from Functions import dataProcessor as DtPR
+from Functions import visualizer as VZ
+def settings():
+    DtPR.set_display_option()
+    dateRange = DtPR.chooseDate()
 
-if __name__ == "__main__":
-    # Step 1: Select Date
-    date_range = dataProcessor.select_date()
-
-    # Record Start time
+    return dateRange
+def mainSystem(dateRange):
+    wkdayList, wkendList = DtPR.weekdays_weekends(dateRange)
+    dateList, dayList = zip(*wkdayList)
     start_time = time.time()
+    # ----- Main System ---------------------------------------- #
+    original_df_list = DtPR.readCSV(dateList)
+    filtered_df_list = DtPR.filtering(original_df_list)
+    sumByuse_df_list = DtPR.sumByUse(filtered_df_list)
 
-    # Step 2: Read CSV Files
-    original_data = dataProcessor.read_csv_files_in_date_range(date_range)
-
-    # Step 3: Set Columns
-    set_col_data = dataProcessor.set_columns(original_data)
-
-    # Step 4: Remove Useless Data
-    removed_data = dataProcessor.remove_useless_data(set_col_data)
-
-    # Step 5: Set Target Location : 광진구
-    target_data = dataProcessor.set_target_location(removed_data)
-    #print(target_data)
-
-    # Step 6: Merge DataFrames
-    #final = dataProcessor.merge_dataframes(target_data)
-
-    # Step 7: Visualize Data
-    #visualizer.show_dataframe(date_range, final)
-
-    # Measuring Runtime
+    # VZ.show_df(dateList, sumByuse_df_list)
+    # ---------------------------------------------------------- #
     end_time = time.time()
     elapsed_time = end_time - start_time
     print(f"Program Run Time >> {elapsed_time:.4f} sec")
+
+if __name__ == "__main__":
+    dateRange = settings()
+    mainSystem(dateRange)

@@ -1,3 +1,4 @@
+from Functions import dataProcessor as DtPR
 import matplotlib.pyplot as plt
 
 def show_dataframe(date_range, dataframe):
@@ -44,3 +45,17 @@ def show_dataframe(date_range, dataframe):
 
     # Show the graph
     plt.show()
+def show_df(dateList, df_list):
+    for i, df in enumerate(df_list):  # Use enumerate to get both index and DataFrame
+        plt.figure(figsize=(10, 6))
+        plt.plot(df['HHMM'], df['Use'], linestyle='-', color='b')
+
+
+        plt.xlabel('HHMM')
+        plt.ylabel('Use')
+        plt.title(f'{dateList[i]} HHMM : Use')
+
+        plt.ylim(0, 100)
+        plt.grid(True)
+
+        plt.savefig(f'Data/graph/plot_{i}.png')
