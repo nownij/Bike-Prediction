@@ -22,7 +22,7 @@ def show_df(period, df_list):
         plt.text(max_x, max_value, f'Max: ({max_x}, {max_value})', verticalalignment='bottom',
                  horizontalalignment='left', fontsize=10, color='red')
 
-        plt.show()
+        # plt.show()
 
-        # plt.savefig(f'Data/graph/plot_{dateList[i]}.png')
-        # print(f"File saved : plot_{dateList[i]}.png")
+        plt.savefig(f'Data/graph/plot_{dateList[i]}.png')
+        print(f"File saved : plot_{dateList[i]}.png")

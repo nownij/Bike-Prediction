@@ -67,7 +67,7 @@ def chooseDate():
 
         except ValueError as e:
             print(f"Invalid Input : {e}. Please Enter Valid Dates.")
-def read_csv(period):
+def read_tpss_csv(period):
     dateList, dayList = zip(*period)
 
     original_df_list = []
@@ -87,6 +87,16 @@ def read_csv(period):
             print("There is no file name of : ", csv_file_path)
 
     return original_df_list
+def read_temp_csv(period):
+    dateList, dayList = zip(*period)
+
+    dateList = [int(date) for date in dateList] # str -> int
+
+    temp_data = pd.read_csv("./Data/temp.csv", encoding='utf-8')
+    df = temp_data[temp_data['Date'].isin(dateList)]
+    # 이거 이제 날짜별로 데이터프레임 만들어서, 리스트에 담고 sumByuse_df_list 인덱스 맞는걸로 기온 합쳐서 새로운 데이터프레임 형식 제작
+    # 학습용으로다가~
+    return df
 def filtering(df_list):
     selected_columns = ['기준_날짜', '기준_시간대', '시작_대여소_ID', '종료_대여소_ID', '전체_건수', '전체_이용_분', '전체_이용_거리']
     new_column_names = ['Date', 'HHMM', 'ST-start', 'ST-end', 'Use', 'Minute[min]', 'Distance[m]']
