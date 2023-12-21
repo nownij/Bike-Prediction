@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import os
 import pandas as pd
 
+# Date Setting System
 def setOptions():
     # Set display options to show all rows and columns in DataFrames
     pd.reset_option('display.max_rows', None)
@@ -67,14 +68,16 @@ def chooseDate():
 
         except ValueError as e:
             print(f"Invalid Input : {e}. Please Enter Valid Dates.")
-def read_tpss_csv(period):
+
+# Bike Data Collection System
+def tpss_readCsv(period):
     dateList, dayList = zip(*period)
 
     original_df_list = []
 
-    for date_str in dateList:
-        year_month_str = date_str[:6]
-        csv_file_path = f"./Data/tpss_bcycl_od_statnhm_{year_month_str}/tpss_bcycl_od_statnhm_{date_str}.csv"
+    for date in dateList:
+        year_month = date[:6]
+        csv_file_path = f"./Data/tpss_bcycl_od_statnhm_{year_month}/tpss_bcycl_od_statnhm_{date}.csv"
 
         if os.path.exists(csv_file_path):
             try:
@@ -87,17 +90,7 @@ def read_tpss_csv(period):
             print("There is no file name of : ", csv_file_path)
 
     return original_df_list
-def read_temp_csv(period):
-    dateList, dayList = zip(*period)
-
-    dateList = [int(date) for date in dateList] # str -> int
-
-    temp_data = pd.read_csv("./Data/temp.csv", encoding='utf-8')
-    df = temp_data[temp_data['Date'].isin(dateList)]
-    # 이거 이제 날짜별로 데이터프레임 만들어서, 리스트에 담고 sumByuse_df_list 인덱스 맞는걸로 기온 합쳐서 새로운 데이터프레임 형식 제작
-    # 학습용으로다가~
-    return df
-def filtering(df_list):
+def tpss_dataProcessing(df_list):
     selected_columns = ['기준_날짜', '기준_시간대', '시작_대여소_ID', '종료_대여소_ID', '전체_건수', '전체_이용_분', '전체_이용_거리']
     new_column_names = ['Date', 'HHMM', 'ST-start', 'ST-end', 'Use', 'Minute[min]', 'Distance[m]']
     target_info_file_path = "./Data/bikeStationInfo(23.06).csv"
@@ -119,8 +112,11 @@ def filtering(df_list):
 
         filtered_df_list.append(df)
 
-    return filtered_df_list
-def sumByUse(df_list):
+    # Function : Sum By Use
+    sumByuse_df_list = sum_by_use(filtered_df_list)
+
+    return sumByuse_df_list
+def sum_by_use(df_list):
     sumByuse_df_list = []
 
     for df in df_list:
@@ -134,3 +130,63 @@ def sumByUse(df_list):
         sumByuse_df_list.append(df)
 
     return sumByuse_df_list
+def concat_df(df_list):
+    df = pd.concat(df_list, ignore_index=True)
+    res_df = df.groupby('HHMM').agg({'Use': 'mean', 'temp': 'mean'}).round(2).reset_index()
+
+    return res_df
+def target_HHMM(df):
+    res_df = df.groupby('HHMM')['Use'].sum().round(2).reset_index()
+
+    total_use = res_df['Use'].sum()
+    target_percentage = 0.9 * total_use
+
+    cumulative_sum = 0
+    target_hour = []
+
+    for index, row in res_df.iterrows():
+        cumulative_sum += row['Use']
+        target_hour.append(row['HHMM'])
+        if cumulative_sum >= target_percentage:
+            break
+
+    return target_hour
+# Temperature Data Collection System
+def temp_readCsv(period):
+    original_temp_df = pd.read_csv("./Data/temp.csv", encoding='utf-8')
+
+    dateList, dayList = zip(*period)
+    dateList = [int(date) for date in dateList]  # str -> int
+
+    temperature_df_list = []
+
+    temp_df = original_temp_df[original_temp_df['Date'].isin(dateList)]
+    temp_df = temp_df.reset_index(drop=True)
+
+    unique_dates = temp_df['Date'].unique()
+
+    for date in unique_dates:
+        temp = temp_df[temp_df['Date'] == date].set_index('Date').transpose().rename(columns={date: 'temp'})
+        temperature_df_list.append(temp)
+
+    return temperature_df_list
+def temp_dataProcessing(df_list):
+    result_temp_df_list = []
+
+    for df in df_list:
+        df = df.loc[df.index.repeat(12)].reset_index(drop=True)
+        df['HHMM'] = [i for i in range(0, 2400, 5) if i % 100 < 60]
+        df = df[['HHMM', 'temp']]
+        result_temp_df_list.append(df)
+
+    return result_temp_df_list
+
+# Merge Bike Data & Temperature Data
+def mergeDataframes(tpss_df_list, temp_df_list):
+    result_df_list = []
+
+    for df1, df2 in zip(tpss_df_list, temp_df_list):
+        df = pd.merge(df1, df2, on='HHMM')
+        result_df_list.append(df)
+
+    return result_df_list
