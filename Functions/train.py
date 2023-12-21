@@ -38,7 +38,7 @@ def train_and_predict(df_list):
     predictions = rf_model.predict(X)
     print(f'Mean Square Error >> {mse.round(6)}')
     print(f'R-squared Score   >> {r2.round(6)}')
-    print(f'{feature_importances}')
+
     res_df['prd_Use'] = predictions.round(2)
     res_df = res_df[['HHMM', 'Use', 'prd_Use', 'temp']]
 

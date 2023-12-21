@@ -135,22 +135,7 @@ def concat_df(df_list):
     res_df = df.groupby('HHMM').agg({'Use': 'mean', 'temp': 'mean'}).round(2).reset_index()
 
     return res_df
-def target_HHMM(df):
-    res_df = df.groupby('HHMM')['Use'].sum().round(2).reset_index()
 
-    total_use = res_df['Use'].sum()
-    target_percentage = 0.9 * total_use
-
-    cumulative_sum = 0
-    target_hour = []
-
-    for index, row in res_df.iterrows():
-        cumulative_sum += row['Use']
-        target_hour.append(row['HHMM'])
-        if cumulative_sum >= target_percentage:
-            break
-
-    return target_hour
 # Temperature Data Collection System
 def temp_readCsv(period):
     original_temp_df = pd.read_csv("./Data/temp.csv", encoding='utf-8')

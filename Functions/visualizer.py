@@ -68,9 +68,16 @@ def show_df(period, df):
     ax1.set_xticks(range(0, 2400, 200))
     ax1.set_xticklabels(ax1.get_xticks(), rotation=45)
 
-    plt.title(f'{dateList[0]} ~ {dateList[-1]} Use & Prediction Over Time', fontsize=15)
+    if 'Sat' not in dayList and 'Sun' not in dayList:
+        day = 'Weekday'
+    else:
+        day = 'Weekend'
+
+    if set(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']).issubset(dayList):
+        day = 'All Day'
+
+    plt.title(f'{dateList[0]}~{dateList[-1]} (Weekend)Use & Prediction Over Time', fontsize=15)
     fig.tight_layout()
     fig.legend(loc='upper left', bbox_to_anchor=(0.1, 0.9))
 
     plt.show()
-

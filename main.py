@@ -28,6 +28,11 @@ def mainSystem(period):
     elapsed_time = end_time - start_time
     print(f"Program Run Time >> {elapsed_time:.4f} sec")
 
+def stationAnalysis(period):
+    ori_tpss_df_list = DtPR.tpss_readCsv(period)
+
+    pass
+
 if __name__ == "__main__":
     period = settings()
     mainSystem(period)
