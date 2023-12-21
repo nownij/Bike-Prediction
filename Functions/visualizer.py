@@ -1,5 +1,7 @@
 # visualizer.py
 import matplotlib.pyplot as plt
+import streamlit as st
+import pandas as pd
 
 def show_df_list(period, df_list):
     dateList, dayList = zip(*period)
@@ -47,6 +49,8 @@ def show_df(period, df):
     dateList, dayList = zip(*period)
 
     fig, ax1 = plt.subplots()
+    df['HHMM'] = pd.to_numeric(df['HHMM'])
+    df['Use'] = pd.to_numeric(df['Use'])
 
     # 왼쪽 y축 설정
     ax1.set_xlabel('HHMM')
@@ -68,16 +72,9 @@ def show_df(period, df):
     ax1.set_xticks(range(0, 2400, 200))
     ax1.set_xticklabels(ax1.get_xticks(), rotation=45)
 
-    if 'Sat' not in dayList and 'Sun' not in dayList:
-        day = 'Weekday'
-    else:
-        day = 'Weekend'
-
-    if set(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']).issubset(dayList):
-        day = 'All Day'
-
-    plt.title(f'{dateList[0]}~{dateList[-1]} (Weekend)Use & Prediction Over Time', fontsize=15)
+    plt.title(f'{dateList[0]}~{dateList[-1]} Use & Prediction Over Time', fontsize=15)
     fig.tight_layout()
     fig.legend(loc='upper left', bbox_to_anchor=(0.1, 0.9))
 
-    plt.show()
+    #plt.plot()
+    st.pyplot(fig)

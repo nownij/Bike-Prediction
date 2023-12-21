@@ -1,5 +1,7 @@
 # dataProcessor.py
 from datetime import datetime, timedelta
+from Functions import train
+import streamlit as st
 import os
 import pandas as pd
 
@@ -39,35 +41,37 @@ def weekdays_weekends(dateRange):
 
     return wkdayList, wkendList
 def chooseDate():
-    while True:
-        start_date_str = input("Start date (YYYYMMDD) >> ")
-        end_date_str   = input("End date   (YYYYMMDD) >> ")
+    start_date_str = st.text_input("Start date (YYYYMMDD) >> ")
+    end_date_str = st.text_input("End date   (YYYYMMDD) >> ")
 
-        try:
-            start_date = datetime.strptime(start_date_str, '%Y%m%d')
-            end_date = datetime.strptime(end_date_str, '%Y%m%d')
+    if start_date_str and end_date_str:
+        if is_valid_date(start_date_str) and is_valid_date(end_date_str):
+            try:
+                start_date = datetime.strptime(start_date_str, '%Y%m%d')
+                end_date = datetime.strptime(end_date_str, '%Y%m%d')
 
-            if start_date > end_date:
-                raise ValueError("End date should be equal to or after the start date.")
+                if start_date > end_date:
+                    raise ValueError("End date should be equal to or after the start date.")
 
-            dateRange = [(current_date.strftime('%Y%m%d'), current_date.strftime('%a')) for current_date in
-                         (start_date + timedelta(days=n) for n in range((end_date - start_date).days + 1))]
+                dateRange = [(current_date.strftime('%Y%m%d'), current_date.strftime('%a')) for current_date in
+                             (start_date + timedelta(days=n) for n in range((end_date - start_date).days + 1))]
 
-            wkdayList, wkendList = weekdays_weekends(dateRange)
+                wkdayList, wkendList = weekdays_weekends(dateRange)
 
-            while True:
-                holiday_var = input("Filter : ALL [0] / Weekdays [1] / Holidays [2] >> ")
-                if holiday_var == '0':
-                    return dateRange
-                elif holiday_var == '1':
-                    return wkdayList
-                elif holiday_var == '2':
-                    return wkendList
-                else:
-                    print("Select again.")
-
-        except ValueError as e:
-            print(f"Invalid Input : {e}. Please Enter Valid Dates.")
+                holiday_var = st.text_input("Filter : ALL [0] / Weekdays [1] / Holidays [2] >> ")
+                if holiday_var:
+                    if holiday_var == '0':
+                        return dateRange
+                    elif holiday_var == '1':
+                        return wkdayList
+                    elif holiday_var == '2':
+                        return wkendList
+                    else:
+                        st.write("Select again.")
+            except ValueError as e:
+                st.write(f"Invalid Input : {e}. Please Enter Valid Dates.")
+        else:
+            st.write("Invalid date format. Please use YYYYMMDD.")
 
 # Bike Data Collection System
 def tpss_readCsv(period):
@@ -175,3 +179,19 @@ def mergeDataframes(tpss_df_list, temp_df_list):
         result_df_list.append(df)
 
     return result_df_list
+
+# Total Function
+def mainSystem(period):
+    ori_tpss_df_list = tpss_readCsv(period)
+    res_tpss_df_list = tpss_dataProcessing(ori_tpss_df_list)
+
+    ori_temp_df_list = temp_readCsv(period)
+    res_temp_df_list = temp_dataProcessing(ori_temp_df_list)
+
+    result_df_list = mergeDataframes(res_tpss_df_list, res_temp_df_list)
+
+    merged_df = train.concat_dfs(result_df_list)
+    pred_df   = train.train_and_predict(merged_df)
+
+    # VZ.show_df_list(period, result_df_list) # 예측 없이 보는거
+    return pred_df
