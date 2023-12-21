@@ -5,7 +5,6 @@ import streamlit as st
 
 def main():
     st.title("Bike Prediction Team #6")
-
     period = DtPR.chooseDate()
 
     if period is not None:

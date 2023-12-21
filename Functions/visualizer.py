@@ -3,48 +3,6 @@ import matplotlib.pyplot as plt
 import streamlit as st
 import pandas as pd
 
-def show_df_list(period, df_list):
-    dateList, dayList = zip(*period)
-
-    for i, df in enumerate(df_list):
-        fig, ax1 = plt.subplots(figsize=(10, 6))
-
-        # Plotting 'Use' on the primary y-axis
-        line1 = ax1.plot(df['HHMM'], df['Use'], linestyle='-', color='b', label='Use')[0]
-
-        # Adding 'temp' to the secondary y-axis
-        ax2 = ax1.twinx()
-        line2 = ax2.plot(df['HHMM'], df['temp'], linestyle='-', color='r', label='temp')[0]
-
-        # Set labels and title
-        ax1.set_xlabel('HHMM')
-        ax1.set_ylabel('Bike Use', color='b', fontsize=10)
-        ax2.set_ylabel('Temperature', color='r', fontsize=10)
-        plt.title(f'{dateList[i]} ({dayList[i]}) HHMM : Use')
-
-        # Set y-axis limits and grid for 'Use'
-        ax1.set_ylim(0, 100)
-        ax1.grid(True)
-
-        # Set y-axis limits for 'temp'
-        ax2.set_ylim(-20, 40)
-
-        # Display legend
-        lines = [line1, line2]
-        labels = [line.get_label() for line in lines]
-        ax1.legend(lines, labels, loc='upper left', bbox_to_anchor=(0.7, 1))
-
-        # Annotate max 'Use' value with a box
-        max_value = df['Use'].max()
-        max_index = df['Use'].idxmax()
-        max_x = df.loc[max_index, 'HHMM']
-        ax1.text(max_x, max_value, f'Max Use: ({max_x}, {max_value})', verticalalignment='bottom',
-                 horizontalalignment='left', fontsize=9, color='blue')
-
-        #plt.show()
-
-        #plt.savefig(f'Data/graph/plot_{dateList[i]}.png')
-        #print(f"File saved : plot_{dateList[i]}.png")
 def show_df(period, df):
     dateList, dayList = zip(*period)
 

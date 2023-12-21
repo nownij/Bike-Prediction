@@ -29,7 +29,7 @@ def train_and_predict(df):
 
     feature_importances = pd.DataFrame({'Feature': X.columns, 'Importance': best_rf_model.feature_importances_})
     feature_importances = feature_importances.sort_values(by='Importance', ascending=False)
-
+    # print(feature_importances)
 
     rf_model = RandomForestRegressor(n_estimators=100, random_state=42)
     rf_model.fit(X_train, y_train)
@@ -40,7 +40,6 @@ def train_and_predict(df):
 
     predictions = rf_model.predict(X)
 
-    #print(feature_importances)
     #print(f'Mean Square Error >> {mse.round(6)}')
     #print(f'R-squared Score   >> {r2.round(6)}')
 

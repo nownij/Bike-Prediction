@@ -73,6 +73,7 @@ def chooseDate():
         else:
             st.write("Invalid date format. Please use YYYYMMDD.")
 
+
 # Bike Data Collection System
 def tpss_readCsv(period):
     dateList, dayList = zip(*period)
@@ -140,6 +141,7 @@ def concat_df(df_list):
 
     return res_df
 
+
 # Temperature Data Collection System
 def temp_readCsv(period):
     original_temp_df = pd.read_csv("./Data/temp.csv", encoding='utf-8')
@@ -170,6 +172,7 @@ def temp_dataProcessing(df_list):
 
     return result_temp_df_list
 
+
 # Merge Bike Data & Temperature Data
 def mergeDataframes(tpss_df_list, temp_df_list):
     result_df_list = []
@@ -179,6 +182,7 @@ def mergeDataframes(tpss_df_list, temp_df_list):
         result_df_list.append(df)
 
     return result_df_list
+
 
 # Total Function
 def mainSystem(period):
@@ -193,5 +197,4 @@ def mainSystem(period):
     merged_df = train.concat_dfs(result_df_list)
     pred_df   = train.train_and_predict(merged_df)
 
-    # VZ.show_df_list(period, result_df_list) # 예측 없이 보는거
     return pred_df
